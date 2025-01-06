@@ -10,8 +10,8 @@ class Settings(BaseSettings):
         env_file_encoding='utf-8'
     )
 
-    DATABASE_URL: str
-    DATABASE_TEST_URL: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    SECRET_KEY: str
-    ALGORITHM: str
+    DATABASE_URL: str = os.getenv("DATABASE_URL")
+    DATABASE_TEST_URL: str = os.getenv("DATABASE_TEST_URL")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+    SECRET_KEY: str = os.getenv("SECRET_KEY")
+    ALGORITHM: str = os.getenv("ALGORITHM")
