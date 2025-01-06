@@ -11,7 +11,7 @@ on:
       - develop
 
 env:
-  DATABASE_URL: "sqlite:///app/data/database/investment_manager_test.db"
+  DATABASE_TEST_URL: "sqlite:///app/data/database/investment_manager_test.db"
   SECRET_KEY: "super-secret-key"
 
 jobs:
