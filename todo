@@ -1,0 +1,19 @@
+# Prioridade
+- [] testes automatizados de criação de usuario
+- [] teste de etl
+- [] criar variaveis de ambiente
+
+# ---------
+
+- [] finalizar o CRUD de usuario
+- [] Criar o restante das tabelas (carteira, compra e venda de ativos)
+
+- [] Tentar usar o get_db que vem de config 
+
+- [] Separar a rota de criação de usuarios
+- [] Criar funcionalidades que irão utilizar os dados da ETL
+
+- [] Criar CI
+
+- [] Docker
+
