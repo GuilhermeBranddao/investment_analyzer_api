@@ -10,7 +10,10 @@ __pycache__/
 notebooks/
 *.ipynb
 
-*.ipynb
+
+# my database
+app/data/**/*.{db,csv}
+
 
 # 
 pycoin/data/
