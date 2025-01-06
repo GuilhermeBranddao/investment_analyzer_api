@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "finalyzer"
+name = "Finalyzer"
 version = "0.1.0"
 description = ""
 authors = ["guilhermebranddao <guilhermebranddao@gmail.com>"]
@@ -24,8 +24,6 @@ numpy = "^2.2.1"
 plotly = "^5.24.1"
 nbformat = "^5.10.4"
 
-[tool.poetry.packages]
-include = ["finalyzer"]
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
