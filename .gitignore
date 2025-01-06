@@ -12,7 +12,9 @@ notebooks/
 
 
 # my database
-app/data/**/*.{db,csv}
+app/data/
+app/data copy/
+
 
 
 # 

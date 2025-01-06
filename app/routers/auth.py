@@ -1,33 +1,22 @@
 from fastapi import APIRouter
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
-from datetime import timedelta, datetime
-from jose import JWTError, jwt
-from typing import Annotated
+from fastapi.security import OAuth2PasswordRequestForm
+from datetime import timedelta
 
-from app.schemas.schemas import User, LoginData, UserBasic
-from app.schemas.portfolio import Portfolio, AssetTransaction
+from app.schemas.schemas import User
 from app.infra.config.database import get_db
 from app.repository.auth import RepositoryUser
-from app.repository.portfolio import RepositoryPortfolio
 from app.infra.providers.hash_provider import gerar_hash, verificar_hash
-from app.infra.providers.token_provider import criar_access_token, verificar_access_token
+from app.infra.providers.token_provider import criar_access_token
 
-from app.routers.dependencies import get_current_user
 from app.validation.password_validation import validate_password
 from app.validation.email_validation import validate_email
 from app.validation.name_validation import validate_name
+from app.settings.config import Settings
 
-
-
+settings = Settings()
 router = APIRouter()
-
-# Configurações para JWT
-SECRET_KEY = 'caa9c8f8620cbb30679026bb6427e11f'
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 3000
 
 @router.post("/signup")
 def signup(user: User, session: Session = Depends(get_db)):
@@ -58,7 +47,7 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = criar_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )

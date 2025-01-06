@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.infra.config.database import Base, get_db
+from app.infra.config.database import Base, create_engine_db, get_db, create_all_tables
 from app.main import app
 from app.settings.config import Settings
 from app.validation.email_validation import validate_email
@@ -15,11 +15,12 @@ from fastapi import HTTPException
 settings = Settings()
 
 # Configuração do banco de dados para testes
-engine = create_engine(settings.DATABASE_TEST_URL, connect_args={"check_same_thread": False})
+engine = create_engine_db(settings.DATABASE_TEST_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+create_all_tables(engine=engine, Base=Base)
 # Criando o banco de dados
-Base.metadata.create_all(bind=engine)
+#Base.metadata.create_all(bind=engine)
 
 # Fixtures
 @pytest.fixture

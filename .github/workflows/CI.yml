@@ -10,13 +10,17 @@ on:
       - main
       - develop
 
-env:
-  DATABASE_TEST_URL: "sqlite:///app/data/database/investment_manager_test.db"
-  SECRET_KEY: "super-secret-key"
-
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_TEST_URL: ${{ secrets.DATABASE_TEST_URL }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
