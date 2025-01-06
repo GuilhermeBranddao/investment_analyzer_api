@@ -16,6 +16,11 @@ from app.infra.providers.hash_provider import gerar_hash, verificar_hash
 from app.infra.providers.token_provider import criar_access_token, verificar_access_token
 
 from app.routers.dependencies import get_current_user
+from app.validation.password_validation import validate_password
+from app.validation.email_validation import validate_email
+from app.validation.name_validation import validate_name
+
+
 
 router = APIRouter()
 
@@ -28,11 +33,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 3000
 def signup(user: User, session: Session = Depends(get_db)):
     repository_user = RepositoryUser(session)
 
-    if repository_user.get_user_per_email(user.email):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Já existe um usuário para este e-mail",
-        )
+    validate_name(name=user.name)
+    validate_email(user_email=user.email,
+                   repository_user=repository_user)
+    validate_password(user_password=user.password,
+                      username=user.name)
+
 
     user.password = gerar_hash(user.password)
     return repository_user.create_user(user)
