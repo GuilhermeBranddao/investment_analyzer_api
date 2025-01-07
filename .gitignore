@@ -10,7 +10,12 @@ __pycache__/
 notebooks/
 *.ipynb
 
-*.ipynb
+
+# my database
+app/data/
+app/data copy/
+
+
 
 # 
 pycoin/data/
@@ -136,7 +141,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+#.env
 .venv
 env/
 venv/

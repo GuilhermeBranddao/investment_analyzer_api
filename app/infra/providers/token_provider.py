@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta
 from jose import jwt
+from app.settings.config import Settings
 
-# CONFIG
-SECRET_KEY = 'caa9c8f8620cbb30679026bb6427e11f'
-ALGORITHM = 'HS256'
-EXPIRES_IN_MIN = 3000
+settings = Settings()
 
 
 def criar_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -14,9 +12,9 @@ def criar_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def verificar_access_token(token: str):
-    carga = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    carga = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
     return carga.get('sub')

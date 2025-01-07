@@ -1,0 +1,45 @@
+name: CI Workflow
+
+on: 
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Print Environment Variables
+        run: |
+          echo "DATABASE_URL=$DATABASE_URL"
+          echo "DATABASE_TEST_URL=$DATABASE_TEST_URL"
+          echo "ACCESS_TOKEN_EXPIRE_MINUTES=$ACCESS_TOKEN_EXPIRE_MINUTES"
+          echo "SECRET_KEY=$SECRET_KEY"
+          echo "ALGORITHM=$ALGORITHM"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Add Poetry to PATH
+        run: echo "${HOME}/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies with Poetry
+        run: poetry install --no-root
+
+      - name: Run pytest
+        run: poetry run pytest
