@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "Finalyzer"
+version = "0.1.0"
+description = ""
+authors = ["guilhermebranddao <guilhermebranddao@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+sqlalchemy = "^2.0.36"
+pydantic-settings = "^2.7.0"
+pandas = "^2.2.3"
+yfinance = "^0.2.51"
+passlib = "^1.7.4"
+python-jose = "^3.3.0"
+alembic = "^1.14.0"
+fastapi = "^0.115.6"
+taskipy = "^1.14.1"
+uvicorn = "^0.34.0"
+pytest = "^8.3.4"
+httpx = "^0.28.1"
+python-multipart = "^0.0.20"
+numpy = "^2.2.1"
+plotly = "^5.24.1"
+nbformat = "^5.10.4"
+mkdocs = "^1.6.1"
+mkdocstrings-python = "^1.13.0"
+pygments = "^2.19.1"
+mkdocs-material = "^9.5.49"
+pymdown-extensions = "^10.13"
+mkdocs-bootstrap386 = "^0.0.2"
+mkdocs-mermaid2-plugin = "^1.2.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.taskipy.tasks]
+run = "uvicorn app.main:app --reload"
+run_in_prod = "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+run_doc = "mkdocs serve -a localhost:8001"
+run_etl = "python app/etl/main.py"
+test = "pytest -v --disable-warnings"
+kill = "kill -9 $(lsof -t -i:8000)"
+freeze_req = "pip freeze >> requirements.txt"
+freeze_req_dev = "pip freeze >> requirements-dev.txt"
+
+generate-migration = "alembic revision --autogenerate -m 'initial migration'"
+apply-migration = "alembic upgrade head"

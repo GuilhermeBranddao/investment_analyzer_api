@@ -1,0 +1,21 @@
+site_name: Documentação do Finalizer
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Introdução: introducao.md
+  - Funcionalidades:
+      - Cadastro de Usuários: funcionalidades/cadastro.md
+      - Criação de Carteiras: funcionalidades/carteiras.md
+      - Adição de Ativos: funcionalidades/ativos.md
+      - Análise e Relatórios: funcionalidades/relatorios.md
+  - Guia do Usuário: guia.md
+  - API: api.md
+  - FAQ: faq.md
+  - Contribuindo: contribuindo.md
+  - Roadmap: roadmap.md
+
+plugins:
+    - search
+    - mermaid2
+
