@@ -2,13 +2,15 @@ from fastapi import APIRouter
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from datetime import timedelta
 
 from app.schemas.schemas import User
 from app.infra.config.database import get_db
 from app.repository.auth import RepositoryUser
 from app.infra.providers.hash_provider import gerar_hash, verificar_hash
-from app.infra.providers.token_provider import criar_access_token
+from app.infra.providers.token_provider import criar_access_token, verificar_access_token
 
 from app.validation.password_validation import validate_password
 from app.validation.email_validation import validate_email
@@ -17,6 +19,9 @@ from app.settings.config import Settings
 
 settings = Settings()
 router = APIRouter()
+
+# Define o esquema OAuth2 para extrair o token do cabeçalho
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 @router.post("/signup")
 def signup(user: User, session: Session = Depends(get_db)):
@@ -54,3 +59,25 @@ def login_for_access_token(
 
     return {"access_token": access_token, "token_type": "bearer"}
 
+@router.post("/verify", response_model=dict)
+def verify_token(token: str = Depends(oauth2_scheme)):
+    """
+    Verifica se o token é válido e retorna os detalhes do token ou erro.
+    """
+    try:
+        # Decodifica o token usando o SECRET_KEY e ALGORITHM
+        
+        email = verificar_access_token(token=token)
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token inválido!",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return {"valid": True, "email": email}
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido ou expirado!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
