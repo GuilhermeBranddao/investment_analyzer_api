@@ -24,6 +24,20 @@ class RepositoryPortfolio():
         self.session.refresh(portfolio_model)
         return portfolio_model
     
+    def check_exist_portfolio_name_duplicate(self, portfolio_name:str, user_id:int):
+        portfolio_data = select(models.Portfolio).where((models.Portfolio.name == portfolio_name) & (models.Portfolio.user_id == user_id))
+        
+        return self.session.execute(portfolio_data).scalars().first()
+
+    def list_portfolios(self, user_id:int):
+        portfolio_data = select(models.Portfolio).where(
+            models.Portfolio.user_id == user_id)
+        return self.session.execute(portfolio_data).scalars().all()
+    
+    def list_assets(self):
+        asset_data = select(models.Asset)
+        return self.session.execute(asset_data).scalars().all()
+
     def check_exist_asset(self, asset_id:int):
         asset_data = select(models.Asset).where(
             models.Asset.id == asset_id)

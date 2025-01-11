@@ -30,6 +30,7 @@ mkdocs-material = "^9.5.49"
 pymdown-extensions = "^10.13"
 mkdocs-bootstrap386 = "^0.0.2"
 mkdocs-mermaid2-plugin = "^1.2.1"
+pygame = "^2.6.1"
 
 
 [tool.poetry.group.dev.dependencies]

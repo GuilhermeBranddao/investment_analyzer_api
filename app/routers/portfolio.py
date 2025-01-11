@@ -18,11 +18,23 @@ def create_portfolio(portfolio: Portfolio,
     
     repository_portfolio = RepositoryPortfolio(session)
 
+    if repository_portfolio.check_exist_portfolio_name_duplicate(portfolio.name, current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Você já possui uma carteira com este nome!",
+        )
+
     portfolio.user_id = current_user.id
     return repository_portfolio.create_portfolio(portfolio)
 
+@router.get("/list")
+def list_portfolios(current_user: Annotated[UserBasic, Depends(get_current_user)],
+                    session: Session = Depends(get_db)):
+    
+    repository_portfolio = RepositoryPortfolio(session)
+    return repository_portfolio.list_portfolios(current_user.id)
 
-@router.post("/transaction")
+@router.post("/transaction/add")
 def add_transaction(transaction: AssetTransaction, session: Session = Depends(get_db)):
     repository_portfolio = RepositoryPortfolio(session)
 
@@ -42,6 +54,11 @@ def get_transaction(portfolio_id:int, session: Session = Depends(get_db)):
     transaction_data = repository_portfolio.get_asset_transaction(portfolio_id)
 
     return transaction_data
+
+@router.get("/asset/list")
+def list_assets(session: Session = Depends(get_db)):
+    repository_portfolio = RepositoryPortfolio(session)
+    return repository_portfolio.list_assets()
 
 from app.PortfolioManager.utils.auxiliary_functions import repository_portfolio_manage
 from app.PortfolioManager.calculations.assets import calculate_portfolio_value_optimized

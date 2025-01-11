@@ -8,7 +8,7 @@ __pycache__/
 
 # my jupyters notebooks
 notebooks/
-*.ipynb
+#*.ipynb
 
 
 # my database
