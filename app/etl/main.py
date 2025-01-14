@@ -3,6 +3,11 @@ from app.etl.pipeline.transform import transform_stock_data
 from app.etl.pipeline.load import load_data_to_db
 from datetime import datetime
 import logging
+from app.settings.config import Settings
+from app.infra.config.database import get_session_local, create_all_tables, create_engine_db
+from app.infra.database.database import Base
+
+settings = Settings()
 
 # Configuração de logging
 logging.basicConfig(
@@ -13,6 +18,10 @@ logging.basicConfig(
 
 def main():
     # Configurações
+
+
+    create_all_tables(engine=create_engine_db(DATABASE_URL=settings.DATABASE_URL), 
+                    Base=Base)
     set_ticker = {
         'HABT11.SA', 'OUJP11.SA', 'PLCR11.SA', 'MXRF11.SA', 
         'DVFF11.SA', 'BMLC11.SA', 'BIME11.SA',

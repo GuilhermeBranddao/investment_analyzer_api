@@ -58,7 +58,7 @@ def calculate_portfolio_value_optimized(df_transaction_history):
     
     asset_ids = df_transacoes['asset_id'].unique()
     all_price_histories = [
-        pd.DataFrame(repository_portfolio.history(asset_id=asset_id)).assign(asset_id=asset_id)
+        pd.DataFrame(repository_portfolio.history_by_asset(asset_id=asset_id)).assign(asset_id=asset_id)
         for asset_id in asset_ids
     ]
     df_prices = pd.concat(all_price_histories, ignore_index=True)

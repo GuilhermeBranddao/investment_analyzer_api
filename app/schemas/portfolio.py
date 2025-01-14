@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
+#class AssetTransactionEdit(BaseModel):
+
 class AssetTransaction(BaseModel):
     id: Optional[int] = None
     quantity: int
@@ -20,6 +22,8 @@ class Portfolio(BaseModel):
     name: str
     user_id: Optional[int] = None
     description: Optional[int] = None
+
+    
 
 class AssetPriceHistory(BaseModel):
     id: Optional[int] = None

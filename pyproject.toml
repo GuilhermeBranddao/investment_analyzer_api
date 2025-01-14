@@ -31,6 +31,8 @@ pymdown-extensions = "^10.13"
 mkdocs-bootstrap386 = "^0.0.2"
 mkdocs-mermaid2-plugin = "^1.2.1"
 pygame = "^2.6.1"
+matplotlib = "^3.10.0"
+seaborn = "^0.13.2"
 
 
 [tool.poetry.group.dev.dependencies]

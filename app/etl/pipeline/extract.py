@@ -5,7 +5,8 @@ def extract_stock_data(ticker: Set[str], start_date: str = None, end_date: str =
     """
     Extrai dados históricos de ações para um ticker específico.
     """
-    df_extract_data = yf.download(ticker, start=start_date, end=end_date, actions=True)
+    df_extract_data = yf.download(ticker, start=start_date, end=end_date, 
+                                  actions=True, auto_adjust=False)
 
     # Remove ativos sem todos os dados (invalidos)
     df_extract_data.dropna(axis=1, how='all', inplace=True)

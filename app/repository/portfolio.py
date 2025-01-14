@@ -5,8 +5,9 @@ from app.models import models
 from app.models.models import Asset
 from typing import List
 
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, timedelta
+
+from typing import Optional, Union
 
 class RepositoryPortfolio():
     def __init__(self, session):
@@ -23,6 +24,45 @@ class RepositoryPortfolio():
         self.session.commit()
         self.session.refresh(portfolio_model)
         return portfolio_model
+    
+    def asset_transaction_edit(self, asset_transaction: AssetTransaction):
+        try:
+            # Recupera a transação de ativo do banco de dados pelo ID
+            transaction_query = select(models.AssetTransaction).where(models.AssetTransaction.id == asset_transaction.id)
+            transaction = self.session.execute(transaction_query).scalar_one()
+
+            # Atualiza os campos da transação de ativo com base nos dados fornecidos
+            if asset_transaction.quantity is not None:
+                transaction.quantity = asset_transaction.quantity
+            
+            if asset_transaction.unit_value is not None:
+                transaction.unit_value = asset_transaction.unit_value
+            
+            if asset_transaction.purchase_value is not None:
+                transaction.purchase_value = asset_transaction.purchase_value
+            
+            if asset_transaction.date is not None:
+                transaction.date = asset_transaction.date
+            
+            if asset_transaction.portfolio_id is not None:
+                transaction.portfolio_id = asset_transaction.portfolio_id
+            
+            if asset_transaction.transaction_type_id is not None:
+                transaction.transaction_type_id = asset_transaction.transaction_type_id
+            
+            if asset_transaction.asset_id is not None:
+                transaction.asset_id = asset_transaction.asset_id
+
+            # Atualiza os dados no banco de dados
+            self.session.commit()
+            self.session.refresh(transaction)
+
+            return transaction
+
+        except NoResultFound:
+            raise ValueError(f"Asset transaction with ID {asset_transaction.id} not found.")
+
+
     
     def check_exist_portfolio_name_duplicate(self, portfolio_name:str, user_id:int):
         portfolio_data = select(models.Portfolio).where((models.Portfolio.name == portfolio_name) & (models.Portfolio.user_id == user_id))
@@ -117,10 +157,65 @@ class RepositoryPortfolio():
             return transaction_type_first.type_name
 
         return None
-        
 
-    def history(self, asset_id: int, start: Optional[datetime] = None, end: Optional[datetime] = None):
-        # Construindo a consulta com filtros opcionais de data
+    def get_asset_transaction_per_id(self, asset_transaction_id:int) -> dict:
+        query = select(models.AssetTransaction).where(
+            models.AssetTransaction.id == asset_transaction_id)
+        
+        asset_transaction = self.session.execute(query).scalars().first()
+        return asset_transaction
+    
+    def history(
+        self, 
+        assets_id: Union[int, set[int]], 
+        start: Optional[datetime] = None, 
+        end: Optional[datetime] = None
+    ) -> list[dict]:
+        """
+        Retorna o histórico de preços de um ou mais ativos dentro de um intervalo de datas opcional.
+
+        Args:
+            assets_id (Union[int, set[int]]): ID do ativo ou conjunto de IDs.
+            start (Optional[datetime]): Data inicial do intervalo (inclusiva).
+            end (Optional[datetime]): Data final do intervalo (inclusiva).
+
+        Returns:
+            list[dict]: Lista de registros do histórico de preços, validados e formatados como dicionários.
+        """
+        # Construção da consulta base
+        query = select(models.AssetPriceHistory).where(
+            models.AssetPriceHistory.asset_id.in_(
+                {assets_id} if isinstance(assets_id, int) else assets_id
+            )
+        )
+
+        # Adiciona filtros opcionais de data, se fornecidos
+        if start:
+            query = query.where(models.AssetPriceHistory.date >= start)
+        if end:
+            query = query.where(models.AssetPriceHistory.date <= end)
+
+        # Executa a consulta no banco de dados
+        asset_price_history_data = self.session.execute(query).scalars().all()
+
+        # Valida os dados retornados e converte para formato dicionário
+        return [
+            AssetPriceHistory.model_validate(record).model_dump()
+            for record in asset_price_history_data
+        ]        
+    
+    def history_by_asset(self, asset_id: int, start: Optional[datetime] = None, end: Optional[datetime] = None):
+        """
+        Retorna o histórico de preços de um único ativo dentro de um intervalo de datas.
+
+        Args:
+            asset_id (int): ID do ativo.
+            start (Optional[datetime]): Data inicial do intervalo (inclusiva).
+            end (Optional[datetime]): Data final do intervalo (inclusiva).
+
+        Returns:
+            list[dict]: Lista de registros do histórico de preços, validados e formatados como dicionários.
+        """
         query = select(models.AssetPriceHistory).where(
             models.AssetPriceHistory.asset_id == int(asset_id))
 
@@ -139,3 +234,4 @@ class RepositoryPortfolio():
         ]
         
         return result
+    

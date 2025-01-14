@@ -297,7 +297,7 @@ def historic_DY_emojis(ativo):
         try:
             mes_ano >= df_history[df_history['Date'] == df_history['Date'].max()]['mes_ano'].item()
         except:
-            breakpoint()
+            print("ERROR")
 
         if mes_ano in df_history['mes_ano'].tolist():
             # '🟢' para ativos que pagam acima de 1.0% de DY e '🔴' se pagar abaixo de 1.0% de DY
