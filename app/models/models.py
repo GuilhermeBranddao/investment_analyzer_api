@@ -1,5 +1,5 @@
 from sqlalchemy import (
-    Column, Integer, String, Boolean, Float, ForeignKey, DateTime, Text, func
+    Column, Integer, String, Boolean, Float, ForeignKey, DateTime, Text, func, Index
 )
 from sqlalchemy.orm import relationship
 from app.infra.database.database import Base
@@ -25,6 +25,9 @@ class User(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
 
     status = relationship('Status', back_populates='users')
+
+    # Relacionamento inverso para portfólios
+    portfolios = relationship('Portfolio', back_populates='user')
 
 Status.users = relationship('User', back_populates='status')
 
@@ -60,6 +63,8 @@ class Asset(Base):
     market_id = Column(Integer, ForeignKey('market.id'))
 
     market = relationship('Market', back_populates='assets')
+    # Relacionamento inverso para transações de ativos
+    user_transactions = relationship('AssetTransaction', back_populates='asset')
 
 Market.assets = relationship('Asset', back_populates='market')
 
@@ -68,7 +73,7 @@ class AssetPriceHistory(Base):
     __tablename__ = 'asset_price_history'
 
     id = Column(Integer, primary_key=True)
-    date = Column(DateTime, nullable=False)
+    date = Column(DateTime, nullable=False, index=True)
     open = Column(Float)
     high = Column(Float)
     low = Column(Float)
@@ -76,7 +81,7 @@ class AssetPriceHistory(Base):
     volume = Column(Integer)
     dividends = Column(Float)
     stock_splits = Column(Float)
-    asset_id = Column(Integer, ForeignKey('assets.id'), nullable=False)
+    asset_id = Column(Integer, ForeignKey('assets.id'), nullable=False, index=True)
 
     asset = relationship('Asset', back_populates='price_history')
 
@@ -89,7 +94,9 @@ class TransactionType(Base):
     id = Column(Integer, primary_key=True)
     type_name = Column(String(50), nullable=False)
 
-# Tabela portfolio
+    # Relacionamento inverso para transações
+    transactions = relationship('AssetTransaction', back_populates='transaction_type')
+
 class Portfolio(Base):
     __tablename__ = 'portfolio'
 
@@ -102,9 +109,14 @@ class Portfolio(Base):
 
     user = relationship('User', back_populates='portfolios')
 
-User.portfolios = relationship('Portfolio', back_populates='user')
+    # Adicionando cascade para exclusão em AssetTransaction
+    portfolio_assets = relationship(
+        'AssetTransaction',
+        back_populates='portfolio',
+        cascade='all, delete-orphan'  # Exclui registros relacionados automaticamente
+    )
 
-# Tabela  asset_transactions
+# Atualizar o relacionamento na tabela AssetTransaction
 class AssetTransaction(Base):
     __tablename__ = 'asset_transactions'
 
@@ -114,7 +126,7 @@ class AssetTransaction(Base):
     purchase_value = Column(Float, nullable=False)
     date = Column(DateTime, nullable=False)
     
-    portfolio_id = Column(Integer, ForeignKey('portfolio.id'), nullable=False)
+    portfolio_id = Column(Integer, ForeignKey('portfolio.id', ondelete='CASCADE'), nullable=False)  # Adicionando ondelete
     transaction_type_id = Column(Integer, ForeignKey('transaction_types.id'))
     asset_id = Column(Integer, ForeignKey('assets.id'), nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
@@ -123,12 +135,3 @@ class AssetTransaction(Base):
     portfolio = relationship('Portfolio', back_populates='portfolio_assets')
     transaction_type = relationship('TransactionType', back_populates='transactions')
     asset = relationship('Asset', back_populates='user_transactions')
-
-Portfolio.portfolio_assets = relationship('AssetTransaction', back_populates='portfolio')
-TransactionType.transactions = relationship('AssetTransaction', back_populates='transaction_type')
-Asset.user_transactions = relationship('AssetTransaction', back_populates='asset')
-
-
-
-
-

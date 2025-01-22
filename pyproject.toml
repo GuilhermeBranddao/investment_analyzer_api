@@ -33,6 +33,9 @@ mkdocs-mermaid2-plugin = "^1.2.1"
 pygame = "^2.6.1"
 matplotlib = "^3.10.0"
 seaborn = "^0.13.2"
+scikit-learn = "^1.6.1"
+statsmodels = "^0.14.4"
+openpyxl = "^3.1.5"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -44,6 +47,7 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.taskipy.tasks]
+run_add_path = "export PYTHONPATH=$(pwd)"
 run = "uvicorn app.main:app --reload"
 run_in_prod = "uvicorn app.main:app --host 0.0.0.0 --port 8000"
 run_doc = "mkdocs serve -a localhost:8001"

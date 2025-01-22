@@ -5,6 +5,8 @@ def extract_stock_data(ticker: Set[str], start_date: str = None, end_date: str =
     """
     Extrai dados históricos de ações para um ticker específico.
     """
+
+    # TODO: Analisar quais ativos devem baixar todos os dados e quais devem baixar só X dias
     df_extract_data = yf.download(ticker, start=start_date, end=end_date, 
                                   actions=True, auto_adjust=False)
 
@@ -24,19 +26,28 @@ def extract_stock_data(ticker: Set[str], start_date: str = None, end_date: str =
 
     return df_extract_data, dict_asset_process
 
+def classify_asset(asset):
+    if asset.endswith('11.SA'):
+        return 'FII'
+    elif asset.endswith('3.SA'):
+        return 'Ação'
+    elif asset.endswith('4.SA'):
+        return 'Ação Preferencial'
+    else:
+        return 'Outro'
+
 def process_yfinance_data(asset_selected: list):
     dict_asset_process = {}
     for asset in asset_selected:
-        stock = yf.Ticker(asset)
-        name = stock.info.get('shortName', asset)
-        category = stock.info.get('quoteType', "Unknown")
-        country = stock.info.get('country', "Unknown")
+        #stock = yf.Ticker(asset)
+        #name = stock.info.get('shortName', asset)
+        category = classify_asset(asset=asset)
+        #country = stock.info.get('country', "Unknown")
 
         dict_asset_process[asset] = {
-                                "name":name,
+                                "name":"Unknown",
                                 "category":category,
-                                "category":category,
-                                "country":country,
+                                "country":"Unknown",
                                 }
         
     return dict_asset_process

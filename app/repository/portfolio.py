@@ -9,6 +9,10 @@ from datetime import datetime, timedelta
 
 from typing import Optional, Union
 
+import pandas as pd
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
+
 class RepositoryPortfolio():
     def __init__(self, session):
         self.session = session
@@ -83,8 +87,59 @@ class RepositoryPortfolio():
             models.Asset.id == asset_id)
         return self.session.execute(asset_data).scalars().first() 
 
-    def portfolio_belongs_user(self):
-        pass
+    def check_exist_transaction(self, transaction_id: int):
+        """
+        Verifica se uma transação com o ID fornecido existe na base de dados.
+
+        Args:
+            transaction_id (int): ID da transação.
+
+        Returns:
+            bool: True se a transação existe, False caso contrário.
+        """
+        transaction_data = select(models.AssetTransaction).where(
+            models.AssetTransaction.id == transaction_id
+        )
+        return self.session.execute(transaction_data).scalars().first()
+    
+    def check_exist_wallet(self, wallet_id: int):
+        """
+        Verifica se uma carteira com o ID fornecido existe na base de dados.
+
+        Args:
+            wallet_id (int): ID da carteira.
+
+        Returns:
+            bool: True se a carteira existe, False caso contrário.
+        """
+        wallet_data = select(models.Portfolio).where(
+            models.Portfolio.id == wallet_id
+        )
+        return self.session.execute(wallet_data).scalars().first()
+
+    def delete_wallet(self, wallet_id: int):
+        """
+        Deleta uma carteira com base no ID.
+
+        Args:
+            wallet_id (int): ID da carteira a ser deletada.
+        """
+        wallet = self.check_exist_wallet(wallet_id)
+        if wallet:
+            self.session.delete(wallet)
+            self.session.commit()
+
+    def delete_asset_transaction(self, transaction_id: int):
+        """
+        Deleta uma transação com base no ID.
+
+        Args:
+            transaction_id (int): ID da transação a ser deletada.
+        """
+        transaction = self.check_exist_transaction(transaction_id)
+        if transaction:
+            self.session.delete(transaction)
+            self.session.commit()
         
     def get_asset_transaction(self, portfolio_id:int):
         transaction_data = select(models.AssetTransaction).where(
@@ -166,11 +221,11 @@ class RepositoryPortfolio():
         return asset_transaction
     
     def history(
-        self, 
-        assets_id: Union[int, set[int]], 
-        start: Optional[datetime] = None, 
-        end: Optional[datetime] = None
-    ) -> list[dict]:
+            self, 
+            assets_id: Union[int, set[int]], 
+            start: Optional[datetime] = None, 
+            end: Optional[datetime] = None
+        ) -> list[dict]:
         """
         Retorna o histórico de preços de um ou mais ativos dentro de um intervalo de datas opcional.
 
@@ -182,11 +237,12 @@ class RepositoryPortfolio():
         Returns:
             list[dict]: Lista de registros do histórico de preços, validados e formatados como dicionários.
         """
+        # Converte assets_id para set se for int
+        asset_ids = {assets_id} if isinstance(assets_id, int) else set(assets_id)
+
         # Construção da consulta base
         query = select(models.AssetPriceHistory).where(
-            models.AssetPriceHistory.asset_id.in_(
-                {assets_id} if isinstance(assets_id, int) else assets_id
-            )
+            models.AssetPriceHistory.asset_id.in_(asset_ids)
         )
 
         # Adiciona filtros opcionais de data, se fornecidos
@@ -195,14 +251,15 @@ class RepositoryPortfolio():
         if end:
             query = query.where(models.AssetPriceHistory.date <= end)
 
-        # Executa a consulta no banco de dados
-        asset_price_history_data = self.session.execute(query).scalars().all()
+        # Executa a consulta no banco de dados com otimização de índices
+        asset_price_history_data = self.session.execute(query).fetchall()
 
         # Valida os dados retornados e converte para formato dicionário
         return [
-            AssetPriceHistory.model_validate(record).model_dump()
+            AssetPriceHistory.model_validate(record[0]).model_dump()
             for record in asset_price_history_data
-        ]        
+        ]
+       
     
     def history_by_asset(self, asset_id: int, start: Optional[datetime] = None, end: Optional[datetime] = None):
         """
@@ -216,6 +273,7 @@ class RepositoryPortfolio():
         Returns:
             list[dict]: Lista de registros do histórico de preços, validados e formatados como dicionários.
         """
+
         query = select(models.AssetPriceHistory).where(
             models.AssetPriceHistory.asset_id == int(asset_id))
 

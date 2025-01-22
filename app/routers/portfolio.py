@@ -11,6 +11,10 @@ from app.routers.dependencies import get_current_user
 from datetime import datetime, timedelta
 from typing import Any
 
+from app.utils.dividends import (get_info_dividends_paid,
+    get_calculate_monthly_percentage_variation,
+    get_analyze_dividend_yield,
+    get_process_asset,)
 
 router = APIRouter()
 
@@ -49,6 +53,56 @@ def add_transaction(transaction: AssetTransaction, session: Session = Depends(ge
 
     return repository_portfolio.add_asset_transaction(transaction)
 
+@router.delete("/transaction/delete/{transaction_id}")
+def delete_transaction(transaction_id: int, session: Session = Depends(get_db)):
+    """
+    Deleta uma transação com base no `transaction_id`.
+
+    Args:
+        transaction_id (int): Identificador da transação.
+        session (Session): Sessão do banco de dados.
+
+    Returns:
+        dict: Mensagem de sucesso ou erro.
+    """
+    repository_portfolio = RepositoryPortfolio(session)
+
+    # Verifica se a transação existe
+    if not repository_portfolio.check_exist_transaction(transaction_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Transação {transaction_id} não encontrada!",
+        )
+
+    # Deleta a transação
+    repository_portfolio.delete_asset_transaction(transaction_id)
+    return {"detail": f"Transação {transaction_id} deletada com sucesso!"}
+
+@router.delete("/wallet/delete/{wallet_id}")
+def delete_wallet(wallet_id: int, session: Session = Depends(get_db)):
+    """
+    Deleta uma carteira com base no `wallet_id`.
+
+    Args:
+        wallet_id (int): Identificador da carteira.
+        session (Session): Sessão do banco de dados.
+
+    Returns:
+        dict: Mensagem de sucesso ou erro.
+    """
+    repository_portfolio = RepositoryPortfolio(session)
+
+    # Verifica se a transação existe
+    if not repository_portfolio.check_exist_wallet(wallet_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Carteira {wallet_id} não encontrada!",
+        )
+
+    # Deleta a transação
+    repository_portfolio.delete_wallet(wallet_id)
+    return {"detail": f"Transação {wallet_id} deletada com sucesso!"}
+
 @router.get("/transaction/{portfolio_id}")
 def get_transaction(portfolio_id:int, session: Session = Depends(get_db)):
 
@@ -60,6 +114,9 @@ def get_transaction(portfolio_id:int, session: Session = Depends(get_db)):
 
 from app.utils.portfolio_history import generate_portfolio_history, merge_with_history
 import json
+from concurrent.futures import ThreadPoolExecutor
+
+
 @router.get("/history/{portfolio_id}")
 def get_portfolio_history(portfolio_id:int, session: Session = Depends(get_db)):
     repository_portfolio = RepositoryPortfolio(session)
@@ -67,16 +124,31 @@ def get_portfolio_history(portfolio_id:int, session: Session = Depends(get_db)):
 
     # TODO: Verifica se portfolio existe
     transaction_data = repository_portfolio.get_asset_transaction(portfolio_id)
+
     portfolio_history = generate_portfolio_history(transaction_data)
+
     set_asset_id = {transaction['asset_id'] for transaction in portfolio_history}
     df_portfolio_history = pd.DataFrame(portfolio_history)
+    
+    #with ThreadPoolExecutor() as executor:
+    #    all_history = list(executor.map(repository_portfolio.history, set_asset_id))
+
     all_history = repository_portfolio.history(set_asset_id)
+
     df_history = pd.DataFrame(all_history)
+    if df_portfolio_history.empty:
+        return []
     merged_data = merge_with_history(df_portfolio_history, df_history)
     merged_data["date"] = merged_data["date"].astype(str)
     data = json.loads(merged_data.to_json(orient="records"))
+
     return data
 
+@router.get("/history-per-asset-id/{asset_id}")
+def history_per_asset_id(asset_id:int, session: Session = Depends(get_db)):
+    repository_portfolio = RepositoryPortfolio(session)
+    history = repository_portfolio.history(asset_id)
+    return history
 
 @router.get("/asset/list")
 def list_assets(session: Session = Depends(get_db)):
@@ -165,8 +237,8 @@ def get_close_per_date_and_asset_id(
             )
 
         # Definir o intervalo de 5 dias
-        start_date = target_date - timedelta(days=2)
-        end_date = target_date + timedelta(days=2)
+        start_date = target_date - timedelta(days=5)
+        end_date = target_date + timedelta(days=5)
 
         # Obter o histórico de preços do ativo no intervalo
         price_history = repository_portfolio.history_by_asset(
@@ -206,4 +278,36 @@ def get_close_per_date_and_asset_id(
             status_code=500,
             detail=f"Ocorreu um erro inesperado: {str(e)}",
         )
+    
+
+@router.get("/generate-asset-analysis-report/{asset_id}")
+def generate_asset_analysis_report(asset_id:int, session: Session = Depends(get_db)):
+    current_date = datetime.now()
+    date_one_year_ago = current_date - timedelta(days=365)
+    date_one_year_ago = date_one_year_ago.strftime('%Y-%m-%d')
+
+    repository_portfolio = RepositoryPortfolio(session)
+
+    asset_history = repository_portfolio.history_by_asset(asset_id=asset_id,
+                                          start=date_one_year_ago)
+    
+    aggregate_result_anual = get_analyze_dividend_yield(asset_id, asset_history)
+    monthly_percentage_variation = get_calculate_monthly_percentage_variation(asset_id=asset_id, asset_history=asset_history)
+    info_dividends_paid = get_info_dividends_paid(asset_id, asset_history)
+
+   # process_asset = get_process_asset(wallet_history= asset_history)
+
+    dict_relatorio = {
+        "asset_id":asset_id,
+        'DY_annual_%':aggregate_result_anual[0]['DY_annual_%'],
+        'yield_on_cost_anual_%':aggregate_result_anual[0]['yield_on_cost_anual_%'],
+        'received_by_annual_quota':aggregate_result_anual[0]['received_by_annual_quota'],
+        "monthly_percentage_variation":[percentage_variation['variation_%'] for percentage_variation in monthly_percentage_variation],  
+        "monthly_accumulated_variation_%":sum([percentage_variation['variation_%'] for percentage_variation in monthly_percentage_variation]), 
+    }
+    
+    dict_relatorio.update(info_dividends_paid)
+    #dict_relatorio.update(process_asset)
+    
+    return dict_relatorio
 

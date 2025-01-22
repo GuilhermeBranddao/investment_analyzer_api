@@ -42,10 +42,11 @@ def get_existing_dates(asset_id, session, table="asset_price_history"):
     try:
         result = session.execute(query, {"asset_id": asset_id}).fetchall()
         # FIXME: Quero tirar o pd.to_datetime dessa iteração
-        return set(pd.to_datetime(row[0]) for row in result)
+        # return set(pd.to_datetime(row[0]) for row in result)
+        return list(row[0] for row in result)
     except SQLAlchemyError as e:
         logging.error(f"Erro ao buscar datas existentes para o asset_id {asset_id}: {e}")
-        return set()
+        return list()
 
 
 # Função principal para carregar dados
@@ -62,7 +63,8 @@ def load_data_to_db(dict_transformed_stock_data):
                 # Converter dados para DataFrame
                 df = pd.DataFrame(data)
                 df = df[["date", "open", "high", "low", "close", "dividends", "stock_splits", "volume"]]
-                asset_id = get_or_create_asset(ticker)
+                
+                asset_id = get_or_create_asset(ticker, category=data.get("category", "Unknown"))
                 df["asset_id"] = asset_id
 
                 # Obter datas existentes no banco
@@ -70,6 +72,8 @@ def load_data_to_db(dict_transformed_stock_data):
 
                 # Filtrar novos dados
                 df["date"] = pd.to_datetime(df["date"])  # Garantir formato de data
+                existing_dates = pd.to_datetime(existing_dates)
+
                 df = df[~df["date"].isin(existing_dates)]
 
                 if not df.empty:
@@ -83,7 +87,7 @@ def load_data_to_db(dict_transformed_stock_data):
 
 
 
-def get_or_create_asset(ticker: str, name: str = None, category: str = None):
+def get_or_create_asset(ticker: str, name: str = None, category: str = "Unknown"):
     """
     Verifica se o ativo já existe no banco e o cria se necessário.
     Retorna o asset_id.
@@ -96,7 +100,7 @@ def get_or_create_asset(ticker: str, name: str = None, category: str = None):
             new_asset = Asset(
                 symbol=ticker,
                 name=name if name else f"Unknown Name for {ticker}",
-                category=category if category else "Unknown"
+                category=category,
             )
             session.add(new_asset)
             session.commit()
