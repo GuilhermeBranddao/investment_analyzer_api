@@ -36,6 +36,7 @@ seaborn = "^0.13.2"
 scikit-learn = "^1.6.1"
 statsmodels = "^0.14.4"
 openpyxl = "^3.1.5"
+psycopg2-binary = "^2.9.10"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -54,8 +55,11 @@ run_doc = "mkdocs serve -a localhost:8001"
 run_etl = "python app/etl/main.py"
 test = "pytest -v --disable-warnings"
 kill = "kill -9 $(lsof -t -i:8000)"
-freeze_req = "pip freeze >> requirements.txt"
+freeze_req = "poetry export -f requirements.txt --without-hashes --with dev > requirements.txt"
+freeze_req_2 = "pip freeze >> requirements.txt"
 freeze_req_dev = "pip freeze >> requirements-dev.txt"
+setup_postgresql =  "python app/infra/config/setup_postgresql.py"
 
 generate-migration = "alembic revision --autogenerate -m 'initial migration'"
 apply-migration = "alembic upgrade head"
+

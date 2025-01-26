@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  finalizer_api:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://guilherme_user:12345678_pass@db:5432/ps_investment_manager
+    command: ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
+    depends_on:
+      - db
+    networks:
+      - app_network
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: guilherme_user
+      POSTGRES_PASSWORD: 12345678_pass
+      POSTGRES_DB: ps_investment_manager
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app_network
+volumes:
+  pgdata:
+
+networks:
+  app_network:
+    driver: bridge

@@ -7,7 +7,7 @@ class User(BaseModel):
     name: str
     password: str
     email: str
-    is_active: Optional[int] = 1
+    is_active: Optional[bool] = True
 
     class Config:
         orm_mode = True

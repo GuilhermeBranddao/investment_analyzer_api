@@ -1,8 +1,10 @@
 from sqlalchemy import (
-    Column, Integer, String, Boolean, Float, ForeignKey, DateTime, Text, func, Index
+    Column, Integer, String, Boolean, Float, ForeignKey, DateTime, Text, func, BigInteger
 )
 from sqlalchemy.orm import relationship
+# from app.infra.config.database import Base
 from app.infra.database.database import Base
+
 
 # Tabela status
 class Status(Base):
@@ -19,7 +21,7 @@ class User(Base):
     name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
-    status_id = Column(Integer, ForeignKey('status.id'), default='user')
+    status_id = Column(Integer, ForeignKey('status.id'), default=1)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -78,7 +80,7 @@ class AssetPriceHistory(Base):
     high = Column(Float)
     low = Column(Float)
     close = Column(Float)
-    volume = Column(Integer)
+    volume = Column(BigInteger)
     dividends = Column(Float)
     stock_splits = Column(Float)
     asset_id = Column(Integer, ForeignKey('assets.id'), nullable=False, index=True)

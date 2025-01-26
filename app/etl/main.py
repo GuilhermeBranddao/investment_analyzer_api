@@ -19,10 +19,12 @@ logging.basicConfig(
 
 def main():
     # Configurações
-    create_all_tables(engine=create_engine_db(DATABASE_URL=settings.DATABASE_URL), 
-                    Base=Base)
+    print(f">>>>>>: {settings.DATABASE_URL}")
+    engine = create_engine_db(settings.DATABASE_URL)
+    create_all_tables(engine, Base)
     
-    df = pd.read_csv("/media/guilherme/ssd_m2_data/py_new_projects/Finalyzer/app/data/file_fii_csv/list_assets.csv")
+    # FIXME: Criar uma variavel de ambiente pra esses dados
+    df = pd.read_csv("app/data/file_fii_csv/list_assets.csv")
     
     set_ticker = set(df["list_assets"].tolist())
     

@@ -25,8 +25,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 settings = Settings()
 
 # Inicializando tabelas
-#initialize_database.feeds_main(session=get_session_local())
-
+initialize_database.feeds_main(session=get_session_local())
 create_all_tables(engine=create_engine_db(DATABASE_URL=settings.DATABASE_URL), 
                   Base=Base)
 
