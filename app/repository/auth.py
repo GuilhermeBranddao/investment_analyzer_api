@@ -12,7 +12,6 @@ class RepositoryUser():
                                     password=user.password,
                                     email=user.email)
         
-        print(">>>>>", user)
         self.session.add(user_bd)
         self.session.commit()
         self.session.refresh(user_bd)

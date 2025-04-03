@@ -4,9 +4,9 @@ from sqlalchemy.exc import NoResultFound
 from app.models import models 
 from app.models.models import Asset
 from typing import List
-
+from sqlalchemy import func
 from datetime import datetime, timedelta
-
+from sqlalchemy import func
 from typing import Optional, Union
 
 import pandas as pd
@@ -66,7 +66,6 @@ class RepositoryPortfolio():
         except NoResultFound:
             raise ValueError(f"Asset transaction with ID {asset_transaction.id} not found.")
 
-
     
     def check_exist_portfolio_name_duplicate(self, portfolio_name:str, user_id:int):
         portfolio_data = select(models.Portfolio).where((models.Portfolio.name == portfolio_name) & (models.Portfolio.user_id == user_id))
@@ -81,6 +80,38 @@ class RepositoryPortfolio():
     def list_assets(self):
         asset_data = select(models.Asset)
         return self.session.execute(asset_data).scalars().all()
+    
+    def list_assets_with_dates(self):
+        # Query para obter os ativos com as datas de início e fim
+        query = (
+            self.session.query(
+                models.Asset.id,
+                models.Asset.symbol,
+                models.Asset.category,
+                models.Asset.name,
+                func.min(models.AssetPriceHistory.date).label("start_date"),
+                func.max(models.AssetPriceHistory.date).label("end_date"),
+            )
+            .join(models.AssetPriceHistory, models.Asset.id == models.AssetPriceHistory.asset_id)
+            .group_by(models.Asset.id, models.Asset.symbol, models.Asset.name)
+            .all()
+        )
+
+        # Retorno em formato de lista de dicionários para facilitar o uso
+        assets_with_dates = [
+            {
+                "id": asset.id,
+                "symbol": asset.symbol,
+                "category": asset.category,
+                "name": asset.name,
+                "start_date": asset.start_date,
+                "end_date": asset.end_date,
+            }
+            for asset in query
+        ]
+
+        return assets_with_dates
+    
 
     def check_exist_asset(self, asset_id:int):
         asset_data = select(models.Asset).where(

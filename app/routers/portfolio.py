@@ -138,8 +138,15 @@ def get_portfolio_history(portfolio_id:int, session: Session = Depends(get_db)):
     df_history = pd.DataFrame(all_history)
     if df_portfolio_history.empty:
         return []
+    
     merged_data = merge_with_history(df_portfolio_history, df_history)
     merged_data["date"] = merged_data["date"].astype(str)
+
+    list_assets = repository_portfolio.list_assets()
+    dict_asset = {asset_data.id: asset_data.symbol for asset_data in list_assets}
+    merged_data["asset_name"] = merged_data["asset_id"].apply(lambda x: dict_asset.get(x, "Desconhecido"))
+    merged_data["dividends_received_total"] = merged_data["quantity"] * merged_data["dividends"]
+
     data = json.loads(merged_data.to_json(orient="records"))
 
     return data
@@ -151,10 +158,10 @@ def history_per_asset_id(asset_id:int, session: Session = Depends(get_db)):
     return history
 
 @router.get("/asset/list")
-def list_assets(session: Session = Depends(get_db)):
+def asset_list(session: Session = Depends(get_db)):
     repository_portfolio = RepositoryPortfolio(session)
-    data = repository_portfolio.list_assets()
-    return data
+    list_assets = repository_portfolio.list_assets_with_dates()
+    return list_assets
 
 from app.PortfolioManager.utils.auxiliary_functions import repository_portfolio_manage
 from app.PortfolioManager.calculations.assets import calculate_portfolio_value_optimized
