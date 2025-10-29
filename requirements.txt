@@ -21,3 +21,6 @@ mkdocs-material
 pymdown-extensions
 mkdocs-bootstrap386
 mkdocs-mermaid2-plugin
+bcrypt
+argon2_cffi
+ipykernel

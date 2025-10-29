@@ -3,6 +3,7 @@ from app.etl.pipeline.transform import transform_stock_data
 from app.etl.pipeline.load import load_data_to_db
 from datetime import datetime
 import logging
+import pandas as pd
 
 # Configuração de logging
 logging.basicConfig(
@@ -13,7 +14,12 @@ logging.basicConfig(
 
 def main():
     # Configurações
-    set_ticker = {
+    df_acoes_b3 = pd.read_csv("app/data/acoes-listadas-b3.csv")
+    df_acoes_b3["Ticker"] = df_acoes_b3["Ticker"].apply(lambda x: f"{x}.SA")
+
+    set_ticker = set(df_acoes_b3["Ticker"])
+
+    set_ticker.update({
         'HABT11.SA', 'OUJP11.SA', 'PLCR11.SA', 'MXRF11.SA', 
         'DVFF11.SA', 'BMLC11.SA', 'BIME11.SA',
         'JPPA11.SA', 'RBRY11.SA', 'VGIR11.SA', 'GALG11.SA', 'AAZQ11.SA', 'BRCR11.SA', 'CPTR11.SA',
@@ -26,7 +32,7 @@ def main():
         'HGCR11.SA', 'IRDM11.SA', 'ITUB3.SA', 'VALE3.SA', 'WEGE3.SA', 'BCRI11.SA', 'PORD11.SA',
         'MXRF11.SA', 'HABT11.SA', 'JPPA11.SA', 'VGIR11.SA', 'OUJP11.SA', 'GALG11.SA',
         'KNCR11.SA'
-    }
+    })
     start_date = None
     today = datetime.now()
     end_date = today.strftime('%Y-%m-%d')

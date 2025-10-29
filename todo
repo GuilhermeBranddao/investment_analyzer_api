@@ -17,3 +17,13 @@
 
 - [] Docker
 
+
+- Documentar melhor a API (click on play)
+    - /auth/signup_auth_signup_post
+        {
+        "id": 0,
+        "name": "NomeUser",
+        "password": "#Us3r1234",
+        "email": "user@gmail.com",
+        "is_active": 1
+        }

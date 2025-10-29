@@ -1,26 +1,15 @@
-from fastapi import FastAPI, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
-from datetime import timedelta, datetime
-from jose import JWTError, jwt
-from typing import Annotated
+from fastapi import FastAPI
+from fastapi.security import OAuth2PasswordBearer
 
-from app.schemas.schemas import User, LoginData, UserBasic
-from app.schemas.portfolio import Portfolio, AssetTransaction
-from app.infra.config.database import get_db
-from app.repository.auth import RepositoryUser
-from app.repository.portfolio import RepositoryPortfolio
-from app.infra.providers.hash_provider import gerar_hash, verificar_hash
-from app.infra.providers.token_provider import criar_access_token, verificar_access_token
 from app.routers import auth, portfolio
-from app.routers.dependencies import get_current_user
 from app.settings.config import Settings
-from app.infra.initialize_database import initialize_database
-from app.models.models import *
-from app.infra.config.database import get_session_local, create_all_tables, create_engine_db
+from app.models.models import Base
+from app.infra.config.database import create_all_tables, create_engine_db
+
 # Inicialização do FastAPI
 app = FastAPI()
+
+# `OAuth2PasswordBearer` espera o token no cabeçalho Authorization Ex: "Authorization: Bearer <token>""
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 settings = Settings()
 

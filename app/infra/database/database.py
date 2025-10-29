@@ -2,8 +2,8 @@ import os
 from urllib.parse import urlparse
 import logging
 from sqlalchemy import create_engine, MetaData, Table, Column, Date, Float, Integer, String
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
+# from sqlalchemy.rom.declarative import declarative_base
 
 Base = declarative_base()
 

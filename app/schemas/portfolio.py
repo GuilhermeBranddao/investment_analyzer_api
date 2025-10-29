@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -12,14 +12,13 @@ class AssetTransaction(BaseModel):
     transaction_type_id: Optional[int] = 1
     asset_id: int
 
-    class Config:
-        from_attributes = True 
+    model_config = ConfigDict(from_attributes=True)
 
 class Portfolio(BaseModel):
     id: Optional[int] = None
     name: str
-    user_id: int
-    description: Optional[int] = None
+    user_id: Optional[int] = None
+    description: Optional[str] = None
 
 class AssetPriceHistory(BaseModel):
     id: Optional[int] = None
@@ -33,5 +32,4 @@ class AssetPriceHistory(BaseModel):
     stock_splits: float
     asset_id: int
 
-    class Config:
-        from_attributes = True 
+    model_config = ConfigDict(from_attributes=True)
