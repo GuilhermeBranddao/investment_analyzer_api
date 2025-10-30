@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "Finalyzer"
+name = "investment_analyzer_api"
 version = "0.1.0"
 description = ""
 authors = ["guilhermebranddao <guilhermebranddao@gmail.com>"]
@@ -53,7 +53,7 @@ run_add_path = "export PYTHONPATH=$(pwd)"
 run = "uvicorn app.main:app --reload"
 run_in_prod = "uvicorn app.main:app --host 0.0.0.0 --port 8000"
 run_doc = "mkdocs serve -a localhost:8001"
-run_etl = "python app/etl/main.py"
+run_etl = "python -m app.etl.main"
 test = "pytest -v --disable-warnings"
 kill = "kill -9 $(lsof -t -i:8000)"
 freeze_req = "poetry export -f requirements.txt --without-hashes --with dev > requirements.txt"

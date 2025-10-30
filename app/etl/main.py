@@ -24,9 +24,9 @@ def main():
     create_all_tables(engine, Base)
     
     # FIXME: Criar uma variavel de ambiente pra esses dados
-    df = pd.read_csv("app/data/file_fii_csv/list_assets.csv")
+    df = pd.read_csv("app/data/list_assets.csv")
     
-    set_ticker = set(df["list_assets"].tolist())
+    set_ticker = set(df["Ticker"].tolist())
     
     start_date = None
     today = datetime.now()

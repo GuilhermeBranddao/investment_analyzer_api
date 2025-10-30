@@ -21,7 +21,7 @@ class Portfolio(BaseModel):
     id: Optional[int] = None
     name: str
     user_id: Optional[int] = None
-    description: Optional[int] = None
+    description: Optional[str] = None
 
     
 

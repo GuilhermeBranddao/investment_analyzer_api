@@ -21,7 +21,7 @@ class Database_Deprecado:
         self.database_url = (
             database_url
             if database_url and urlparse(database_url).scheme
-            else os.getenv("DATABASE_URL", "sqlite:///app/data/database/stocks_data.db")
+            else os.getenv("DATABASE_URL", "sqlite:///app/data/database/investment_manager.db")
         )
         self.engine = create_engine(self.database_url, echo=False)
         self.Session = sessionmaker(bind=self.engine)

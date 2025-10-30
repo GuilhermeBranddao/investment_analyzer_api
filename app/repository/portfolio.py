@@ -8,13 +8,14 @@ from sqlalchemy import func
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from typing import Optional, Union
+from sqlalchemy.orm import Session
 
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
 class RepositoryPortfolio():
-    def __init__(self, session):
+    def __init__(self, session:Session):
         self.session = session
 
     def create_portfolio(self, portfolio: Portfolio):
@@ -67,10 +68,18 @@ class RepositoryPortfolio():
             raise ValueError(f"Asset transaction with ID {asset_transaction.id} not found.")
 
     
-    def check_exist_portfolio_name_duplicate(self, portfolio_name:str, user_id:int):
-        portfolio_data = select(models.Portfolio).where((models.Portfolio.name == portfolio_name) & (models.Portfolio.user_id == user_id))
-        
-        return self.session.execute(portfolio_data).scalars().first()
+    def portfolio_name_exists(self, portfolio_name: str, user_id: int) -> bool:
+        """Verifica se já existe uma carteira com o mesmo nome para o usuário."""
+        query = (
+            select(models.Portfolio)
+            .where(
+                models.Portfolio.name == portfolio_name,
+                models.Portfolio.user_id == user_id
+            )
+        )
+        exists = self.session.execute(query).scalars().first() is not None
+        return not exists
+
 
     def list_portfolios(self, user_id:int):
         portfolio_data = select(models.Portfolio).where(

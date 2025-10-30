@@ -25,7 +25,7 @@ def create_portfolio(portfolio: Portfolio,
     
     repository_portfolio = RepositoryPortfolio(session)
 
-    if repository_portfolio.check_exist_portfolio_name_duplicate(portfolio.name, current_user.id):
+    if repository_portfolio.portfolio_name_exists(portfolio.name, current_user.id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Você já possui uma carteira com este nome!",

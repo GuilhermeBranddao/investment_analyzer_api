@@ -1,6 +1,6 @@
 # Home
 
-Bem-vindo ao **Finalyzer**, seu app de finanças
+Bem-vindo ao **investment_analyzer_api**, seu app de finanças
 
 ## Commands
 

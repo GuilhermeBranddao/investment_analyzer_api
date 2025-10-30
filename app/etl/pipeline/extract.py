@@ -8,7 +8,8 @@ def extract_stock_data(ticker: Set[str], start_date: str = None, end_date: str =
 
     # TODO: Analisar quais ativos devem baixar todos os dados e quais devem baixar só X dias
     df_extract_data = yf.download(ticker, start=start_date, end=end_date, 
-                                  actions=True, auto_adjust=False)
+                                  actions=True, auto_adjust=False,
+                                  period="max", interval="1d")
 
     # Remove ativos sem todos os dados (invalidos)
     df_extract_data.dropna(axis=1, how='all', inplace=True)
